@@ -93,27 +93,17 @@ class Delivery {
 
 /// In-memory shared state for deliveries.
 final ValueNotifier<List<Delivery>> deliveries = ValueNotifier<List<Delivery>>([
-  Delivery(
-      id: '1',
-      title: 'Pedido #1',
-      address: 'Calle 12, 45',
-      deliverer: 'Alice'),
-  Delivery(
-      id: '2',
-      title: 'Pedido #2',
-      address: 'Avenida 3, 200',
-      deliverer: 'Bob'),
-  Delivery(
-      id: '3',
-      title: 'Pedido #3',
-      address: 'Plaza Central',
-      deliverer: 'Alice'),
-  Delivery(
-      id: '4',
-      title: 'Pedido #4',
-      address: 'Parque Norte',
-      deliverer: 'Charlie'),
+  Delivery(id: '1', title: 'Pedido #1', address: 'Calle 12, 45', deliverer: 'Alice'),
+  Delivery(id: '2', title: 'Pedido #2', address: 'Avenida 3, 200', deliverer: 'Bob'),
+  Delivery(id: '3', title: 'Pedido #3', address: 'Plaza Central', deliverer: 'Alice'),
+  Delivery(id: '4', title: 'Pedido #4', address: 'Parque Norte', deliverer: 'Charlie'),
+  Delivery(id: '5', title: 'Pedido #5', address: 'Calle Luna 10', deliverer: 'Diego'),
+  Delivery(id: '6', title: 'Pedido #6', address: 'Avenida Sol 8', deliverer: 'Elena'),
+  Delivery(id: '7', title: 'Pedido #7', address: 'Barrio Alto', deliverer: 'Bob'),
+  Delivery(id: '8', title: 'Pedido #8', address: 'Paseo Verde', deliverer: 'Diego'),
+  Delivery(id: '9', title: 'Pedido #9', address: 'Mercado Central', deliverer: 'Elena'),
 ]);
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.role, this.delivererName}) : super(key: key);
 
@@ -124,7 +114,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   late String selectedDeliverer;
 
   List<String> get deliverers {
@@ -135,12 +125,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return set.toList()..sort();
   }
 
-  void toggleDelivered(String id) {
+  void setDelivered(String id, bool value) {
     final list = deliveries.value;
     final index = list.indexWhere((e) => e.id == id);
     if (index == -1) return;
-    list[index].delivered = !list[index].delivered;
-    // trigger listeners
+    list[index].delivered = value;
     deliveries.value = List<Delivery>.from(list);
   }
 
@@ -155,181 +144,205 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-  final isDeliverer = widget.role == UserRole.deliverer;
-
-    Widget buildDelivererView() {
-      final name = widget.delivererName ?? selectedDeliverer;
-      return Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text('Repartidor:', style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(width: 12),
-                Text(name),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    final list = deliveries.value;
-                    for (var d in list) {
-                      if (d.deliverer == name) d.delivered = true;
-                    }
-                    deliveries.value = List<Delivery>.from(list);
-                  },
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Marcar todo'),
-                )
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ValueListenableBuilder<List<Delivery>>(
+  Widget buildDelivererView() {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('Repartidor:', style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(width: 12),
+              ValueListenableBuilder<List<Delivery>>(
                 valueListenable: deliveries,
-                builder: (context, list, _) {
-                  final my = list.where((d) => d.deliverer == name).toList();
-                  if (my.isEmpty) return const Center(child: Text('No hay entregas asignadas'));
-                  return ListView.builder(
-                    itemCount: my.length,
-                    itemBuilder: (context, index) {
-                      final d = my[index];
-                      return Card(
-                        elevation: 2,
-                        child: ListTile(
-                          onTap: () => toggleDelivered(d.id),
-                          leading: AnimatedContainer(
-                            duration: const Duration(milliseconds: 350),
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: d.delivered ? Colors.green.shade100 : Colors.grey.shade200,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              d.delivered ? Icons.check : Icons.pedal_bike,
-                              color: d.delivered ? Colors.green.shade800 : Colors.grey.shade600,
-                            ),
-                          ),
-                          title: Text(
-                            d.title,
-                            style: TextStyle(
-                              decoration: d.delivered ? TextDecoration.lineThrough : TextDecoration.none,
-                            ),
-                          ),
-                          subtitle: Text(d.address),
-                          trailing: d.delivered
-                              ? const Text('Entregado', style: TextStyle(color: Colors.green))
-                              : const Text('Pendiente', style: TextStyle(color: Colors.orange)),
-                        ),
-                      );
-                    },
+                builder: (context, value, _) {
+                  final names = deliverers;
+                  if (!names.contains(selectedDeliverer) && names.isNotEmpty) selectedDeliverer = names.first;
+                  return DropdownButton<String>(
+                    value: selectedDeliverer,
+                    items: names.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (v) => setState(() => selectedDeliverer = v ?? selectedDeliverer),
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen())),
-                child: const Text('Cerrar sesión'),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    Widget buildSupervisorView() {
-      return Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Progreso global', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            ValueListenableBuilder<List<Delivery>>(
+              const Spacer(),
+              ElevatedButton.icon(
+                onPressed: () {
+                  final list = deliveries.value;
+                  for (var d in list) {
+                    if (d.deliverer == selectedDeliverer) d.delivered = true;
+                  }
+                  deliveries.value = List<Delivery>.from(list);
+                },
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Marcar todo'),
+              )
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ValueListenableBuilder<List<Delivery>>(
               valueListenable: deliveries,
               builder: (context, list, _) {
-                final total = list.length;
-                final done = list.where((d) => d.delivered).length;
-                final percent = total == 0 ? 0.0 : done / total;
+                final pending = list.where((d) => d.deliverer == selectedDeliverer && !d.delivered).toList();
+                final done = list.where((d) => d.deliverer == selectedDeliverer && d.delivered).toList();
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LinearProgressIndicator(value: percent, minHeight: 12),
-                    const SizedBox(height: 8),
-                    Text('${(percent * 100).toStringAsFixed(0)}% completado ($done/$total)'),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Pendientes (${pending.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: pending.isEmpty
+                                ? const Center(child: Text('No hay pendientes'))
+                                : ListView.builder(
+                                    itemCount: pending.length,
+                                    itemBuilder: (context, index) {
+                                      final d = pending[index];
+                                      return Card(
+                                        child: ListTile(
+                                          onTap: () {
+                                            // mark delivered
+                                            setDelivered(d.id, true);
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${d.title} marcado como entregado'), backgroundColor: Colors.green.shade700, duration: const Duration(milliseconds: 700)));
+                                          },
+                                          leading: const Icon(Icons.pedal_bike),
+                                          title: Text(d.title),
+                                          subtitle: Text(d.address),
+                                          trailing: const Text('Marcar'),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Entregados (${done.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: done.isEmpty
+                                ? const Center(child: Text('No hay entregados'))
+                                : ListView.builder(
+                                    itemCount: done.length,
+                                    itemBuilder: (context, index) {
+                                      final d = done[index];
+                                      return Card(
+                                        color: Colors.green.shade50,
+                                        child: ListTile(
+                                          onTap: () {
+                                            // move back to pending
+                                            setDelivered(d.id, false);
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido vuelto a pendientes'), duration: Duration(milliseconds: 700)));
+                                          },
+                                          leading: const Icon(Icons.check_circle, color: Colors.green),
+                                          title: Text(d.title, style: const TextStyle(decoration: TextDecoration.lineThrough)),
+                                          subtitle: Text(d.address),
+                                          trailing: const Text('Deshacer', style: TextStyle(color: Colors.green)),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 );
               },
             ),
-            const SizedBox(height: 16),
-            const Text('Todas las entregas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ValueListenableBuilder<List<Delivery>>(
-                valueListenable: deliveries,
-                builder: (context, list, _) {
-                  if (list.isEmpty) return const Center(child: Text('Sin entregas'));
-                  return ListView.builder(
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      final d = list[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(d.title),
-                          subtitle: Text('${d.address} — ${d.deliverer}'),
-                          trailing: IconButton(
-                            icon: Icon(
-                              d.delivered ? Icons.check_circle : Icons.radio_button_unchecked,
-                              color: d.delivered ? Colors.green : Colors.grey,
-                            ),
-                            onPressed: () => toggleDelivered(d.id),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen())),
-                child: const Text('Cerrar sesión'),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final tabs = isDeliverer ? const [Tab(text: 'Repartidor')] : const [Tab(text: 'Supervisor')];
-
-    return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('GreenGo Logistics'),
-          bottom: TabBar(tabs: tabs),
-          actions: [
-            IconButton(
-              tooltip: 'Cerrar sesión',
-              onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen())),
-              icon: const Icon(Icons.logout),
-            )
-          ],
-        ),
-        body: TabBarView(
-          children: isDeliverer ? [buildDelivererView()] : [buildSupervisorView()],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget buildSupervisorView() {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Progreso global', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          ValueListenableBuilder<List<Delivery>>(
+            valueListenable: deliveries,
+            builder: (context, list, _) {
+              final total = list.length;
+              final done = list.where((d) => d.delivered).length;
+              final percent = total == 0 ? 0.0 : done / total;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LinearProgressIndicator(value: percent, minHeight: 12),
+                  const SizedBox(height: 8),
+                  Text('${(percent * 100).toStringAsFixed(0)}% completado ($done/$total)'),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          const Text('Todas las entregas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ValueListenableBuilder<List<Delivery>>(
+              valueListenable: deliveries,
+              builder: (context, list, _) {
+                if (list.isEmpty) return const Center(child: Text('Sin entregas'));
+                return ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    final d = list[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(d.title),
+                        subtitle: Text('${d.address} — ${d.deliverer}'),
+                        trailing: IconButton(
+                          icon: Icon(
+                            d.delivered ? Icons.check_circle : Icons.radio_button_unchecked,
+                            color: d.delivered ? Colors.green : Colors.grey,
+                          ),
+                          onPressed: () => setDelivered(d.id, !d.delivered),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDeliverer = widget.role == UserRole.deliverer;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('GreenGo Logistics'),
+        actions: [
+          IconButton(
+            tooltip: 'Cerrar sesión',
+            onPressed: () {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
+            },
+            icon: const Icon(Icons.logout),
+          )
+        ],
+      ),
+      body: isDeliverer ? buildDelivererView() : buildSupervisorView(),
     );
   }
 }
