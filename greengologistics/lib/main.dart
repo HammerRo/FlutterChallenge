@@ -10,7 +10,7 @@ class GreenGoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GreenGo Logistics',
+      title: '',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green.shade700),
         useMaterial3: true,
@@ -32,12 +32,43 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GreenGo Logistics')),
+      appBar: AppBar(title: const Text('')),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('GreenGo Logistics', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            // GIF de inicio (Canva). Se carga desde la URL pública.
+            // Si la URL está vacía o falla, se muestra un icono como fallback.
+            if (kCanvaGifUrl.isNotEmpty)
+              SizedBox(
+                width: 220,
+                height: 140,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    kCanvaGifUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1) : null),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey.shade200,
+                      child: const Center(child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey)),
+                    ),
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 12),
+
+            
             const SizedBox(height: 24),
             SizedBox(
               width: 220,
@@ -74,6 +105,27 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+// URL pública del GIF exportado/compartido desde Canva.
+// Reemplaza por tu enlace (ej. https://cdn.../tu_gif.gif)
+const String kCanvaGifUrl = 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaXc5Y2o2bGd3MjBuaHRsaXgzbXgzbTA3YmFhdWtuanBwM3ZhaGUwOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/F6WNdTpsCeJJkrc1cs/giphy.gif';
+const String AliceGif = 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2k0b3VsMHloazlscnp3NmsyejhjcmUwNm1qNjVzN293emFsanBzbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/zR2CHWuaeAITD9pdTC/giphy.gif';
+const String BobGif = 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGFnZzUwdjZndmNmZHI2c3l2MGgweTM5NXM0djluMTk4Ymd3M2U4NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oZh8qZnmPuh7MQVOnt/giphy.gif';
+const String CharlieGif = 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmFhcGNieHJuODZ5anVycTQwMjI3N2VpZjlrNnBtMmQ3MmwyY3VqayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/uQunwdZyZmQWPZyU8i/giphy.gif';
+const String DiegoGif = 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGo2NjJueDkzMmNuODFnM2NzbndsYjd1cWw3dG8zYXcyYXM4MmttZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BjLDWsRSTyb28z1pq2/giphy.gif';
+const String ElenaGif = 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbG15eXlscDQ4NTNqdG92cTZ2MzVhNmF6OHMxcjFwYWRjOG5xczY5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6veqZfEYSdfWx2U0G0/giphy.gif';
+
+// Mapa opcional para asignar un GIF a cada repartidor.
+// Puedes reemplazar las URLs por los gifs específicos de cada repartidor.
+final Map<String, String> delivererGifs = {
+  'Alice': AliceGif,
+  'Bob': BobGif,
+  'Charlie': CharlieGif,
+  'Diego': DiegoGif,
+  'Elena': ElenaGif,
+};
+
+String gifForDeliverer(String name) => delivererGifs[name] ?? '';
 
 class Delivery {
   Delivery({
@@ -154,6 +206,48 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Text('Repartidor:', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(width: 12),
+
+              // Avatar circular que muestra el GIF del repartidor seleccionado.
+              // Si no hay URL, se muestra un icono por defecto.
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.shade100,
+                ),
+                child: ClipOval(
+                  child: Builder(builder: (context) {
+                    final url = gifForDeliverer(selectedDeliverer);
+                    if (url.isEmpty) {
+                      return const Center(child: Icon(Icons.person, color: Colors.grey));
+                    }
+                    return Image.network(
+                      url,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stack) => const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                    );
+                  }),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
               ValueListenableBuilder<List<Delivery>>(
                 valueListenable: deliveries,
                 builder: (context, value, _) {
@@ -331,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDeliverer = widget.role == UserRole.deliverer;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GreenGo Logistics'),
+        title: const Text(''),
         actions: [
           IconButton(
             tooltip: 'Cerrar sesión',
