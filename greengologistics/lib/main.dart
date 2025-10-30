@@ -26,7 +26,7 @@ enum UserRole { deliverer, supervisor }
 class LoginScreen extends StatelessWidget {
   LoginScreen({Key? key}) : super(key: key);
 
-  // pick a default deliverer name if available
+
   String get defaultDeliverer => deliveries.value.isNotEmpty ? deliveries.value.first.deliverer : 'Alice';
 
   @override
@@ -37,8 +37,6 @@ class LoginScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // GIF de inicio (Canva). Se carga desde la URL pública.
-            // Si la URL está vacía o falla, se muestra un icono como fallback.
             if (kCanvaGifUrl.isNotEmpty)
               SizedBox(
                 width: 220,
@@ -106,8 +104,7 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-// URL pública del GIF exportado/compartido desde Canva.
-// Reemplaza por tu enlace (ej. https://cdn.../tu_gif.gif)
+
 const String kCanvaGifUrl = 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaXc5Y2o2bGd3MjBuaHRsaXgzbXgzbTA3YmFhdWtuanBwM3ZhaGUwOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/F6WNdTpsCeJJkrc1cs/giphy.gif';
 const String AliceGif = 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2k0b3VsMHloazlscnp3NmsyejhjcmUwNm1qNjVzN293emFsanBzbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/zR2CHWuaeAITD9pdTC/giphy.gif';
 const String BobGif = 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGFnZzUwdjZndmNmZHI2c3l2MGgweTM5NXM0djluMTk4Ymd3M2U4NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oZh8qZnmPuh7MQVOnt/giphy.gif';
@@ -115,8 +112,7 @@ const String CharlieGif = 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmF
 const String DiegoGif = 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGo2NjJueDkzMmNuODFnM2NzbndsYjd1cWw3dG8zYXcyYXM4MmttZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BjLDWsRSTyb28z1pq2/giphy.gif';
 const String ElenaGif = 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbG15eXlscDQ4NTNqdG92cTZ2MzVhNmF6OHMxcjFwYWRjOG5xczY5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6veqZfEYSdfWx2U0G0/giphy.gif';
 
-// Mapa opcional para asignar un GIF a cada repartidor.
-// Puedes reemplazar las URLs por los gifs específicos de cada repartidor.
+
 final Map<String, String> delivererGifs = {
   'Alice': AliceGif,
   'Bob': BobGif,
@@ -143,7 +139,7 @@ class Delivery {
   bool delivered;
 }
 
-/// In-memory shared state for deliveries.
+
 final ValueNotifier<List<Delivery>> deliveries = ValueNotifier<List<Delivery>>([
   Delivery(id: '1', title: 'Pedido #1', address: 'Calle 12, 45', deliverer: 'Alice'),
   Delivery(id: '2', title: 'Pedido #2', address: 'Avenida 3, 200', deliverer: 'Bob'),
@@ -207,8 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text('Repartidor:', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(width: 12),
 
-              // Avatar circular que muestra el GIF del repartidor seleccionado.
-              // Si no hay URL, se muestra un icono por defecto.
+
               Container(
                 width: 48,
                 height: 48,
